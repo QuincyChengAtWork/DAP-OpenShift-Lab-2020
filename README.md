@@ -18,9 +18,17 @@ The application will connect to a MySQL database to retreive data, and during au
 ![Architecture](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Images/Integrations/k8s-ee-integration-arch.jpg)
 
 
-## Procedure
+## Technical Procedure
 
-### [Prerequisite: Environment Setup](00-setup.md)
+### Prerequisite
+ - Access to Smartfile
+ - FTP client
+ - 7zip or Winzip installed on your workstation
+ - VMware Workstation 12 or greater installed on your workstation
+ - CyberArk CorePAS installed on VMWare workstation, `CGD-2020-0101-GA` prefered 
+ - Sufficient disk space for additional 2 virtual machines (5.6GB for compressed VM and/or 24GB for extracted VM)
+
+### [Preparation: Environment Setup](00-setup.md)
 1. Setup CyberArk CorePAS based on CGD
 2. Setup 2 Extra VM (DAP Master & OKD)
 3. Onboard MySQL Account to CorePAS
@@ -65,11 +73,7 @@ The application will connect to a MySQL database to retreive data, and during au
 2. Prepare and apply config
 3. Re-deploy app
 
-
 ### [Extra Challenges](06-extra_challenges.md)
 
-
-
-
-
-
+### Reference
+ - [CyberArk documentation](https://docs.cyberark.com/)
