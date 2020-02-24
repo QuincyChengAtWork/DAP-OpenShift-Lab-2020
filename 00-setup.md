@@ -37,14 +37,45 @@ mysql01|10.0.1.41
 
 ## Onboard MySQL Account to CorePAS
 
-We are going to manage & secure a database secret.   Let's onboard the MySQL database credentials to CorePAS.
+We are going to manage & secure a database secret.   Let's onboard the MySQL database credentials to CorePAS.  You can also refer to https://docs.cyberark.com/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PASIMP/MySQLServerPlugin.htm
 
-1. Log in to `CLIENT` VM
-2. Browse to `pvwa.cyberarkdemo.com` using your preferred web browser
-4. 
+### Install & Configure MySQL Driver
+1. Log in to `COMP` VM as CYBERARKDEMO\administrator
+2. Browse to https://dev.mysql.com/downloads/file/?id=492345
+3. Click `No thanks, just start my download` to start downloading 32-bit MySQL ODBC driver
+4. Double click the downloaded msi file to start installation
+5. Click `Start` to search for `ODBC Data Source Administrator (32-bit)`
+6. Browse to `Driver` tab and make sure MySQL are installed
+
+![mysql driver](./images/00-mysql.png)
+
+7.Logoff
+
+### Create MySQL account in PVWA
+1. Log in to `CLIENT` as `CYBERARKDEMO\Mike`
+2. Start `Chrome` and access PVWA by clicking `PAS` on the bookmark bar
+3. Select `Active Directory / LDAP` and login as `Mike`
+4. Create a new safe called `appaccts`
+5. Create an account called `app-cityapp`
+
+Address: mysql01
+Port: 3306
+Username: cityapp
+Initial Password: Cyberark1
+Database: world
+
+![mysql acc](./images/00-mysql_acc.png)
+
+6. Try verify and change the password
 
 
 ## Setup DAP Master
+
+
+1.	Load conjur image
+2.	Start conjur container
+3.	Configure DAP with signed certificate
+
 
 
 ## Configure Vault Synchronizer
