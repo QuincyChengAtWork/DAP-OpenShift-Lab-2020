@@ -158,4 +158,28 @@ conjur policy load root /root/policy/root.yaml
 
 ## Configure Vault Synchronizer
 
+The CGD VM already have synchronizer installed on COMP. We will have to rerun the installer to point it to new master-dap
+1. Copy `Conjur-Vault-Synchronizer` installation package to COMP VM
+2. Use PrivateArk to reset password of `Sync_COMPONENTS` to `Cyberark1`
+   We will need to enter this password during synchronizer installation.
+
+3. Log in to `COMP` as `Mike`
+4. Open powershell and run installation script 
+
+```powershell
+cd "c:\Users\mike\Downloads\Vault Conjur Synchronizer-Rls-v10.10\Installation"
+.\V5SynchronizerInstallation.ps1
+```
+
+Key|Value
+---|-----
+username|admin
+password|Cyberark1
+hostname|master-dap.cyberarkdemo.com:443
+account|cyberark
+
+
+```
+
+![ps](.\images\00-resync.png)
 
