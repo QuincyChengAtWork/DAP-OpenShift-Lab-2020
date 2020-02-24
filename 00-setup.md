@@ -26,6 +26,7 @@ We will setup 2 more VMs for this tutorial.  One as DAP Master instance and anot
 DNS record | IP Address
 -----------|-----------
 *.okd|10.0.1.40
+okd|10.0.1.40
 docker03|10.0.1.41
 master-dap|10.0.1.41
 mysql01|10.0.1.41
