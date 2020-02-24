@@ -111,7 +111,11 @@ Database|world
 
 1. Login to `DAP-Master` as `root`
 2. Right-click the desktop and select `Open Terminal`
-3. Load the image to docker
+
+3. Conjur appliance (DAP) image has been loaded for you.
+  To verify it, execute `docker images`
+
+3. IF you want to load the image to docker again, you can save the compressed image file to `DAP-Master` and execute the following commands:
 ```bash
 cd /root
 docker load -i conjur-appliance_11.2.1.tar.gz
