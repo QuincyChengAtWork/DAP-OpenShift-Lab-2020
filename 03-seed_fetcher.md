@@ -120,7 +120,7 @@ oc create configmap master-certificate --from-file=ssl-certificate=<(cat master-
 oc apply -f follower-dap-with-seedfetcher.yaml
 ```
 
-9. Create route at Services > Follower > Create route
+9. Create route at `Services > Follower > Create route`, check `Secure route` and select `Passthrough` for `TLS Terminatinon`
 
 10.	To verify the follower Pods started properly, it should now be exposed via route `https://follower-dap.apps.okd.cyberarkdemo.com` 
 
