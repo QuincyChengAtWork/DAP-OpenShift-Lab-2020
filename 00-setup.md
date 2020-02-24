@@ -127,7 +127,7 @@ docker tag registry.tld/conjur-appliance:11.2.1 conjur-appliance:11.2.1
 1. Spin up the master container
 ```bash
 docker run --name conjur-appliance -d --restart=always --security-opt seccomp:unconfined -p "443:443" -p "636:636" -p "5432:5432" -p "1999:1999" conjur-appliance:11.2.1
-``
+```
 
 2. Copy the cert
 ```bash
