@@ -85,12 +85,13 @@ docker run --name mysqldb -v /root/db:/docker-entrypoint-initdb.d \
 2. Browse to `https://components.cyberarkdemo.com/PasswordVault/v10/`
 3. Select `Active Directory / LDAP` and login as `Mike`
 4. Create a new safe called `appaccts` at `Policies > Access Control (Safe)` ([ref](https://docs.cyberark.com/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PASIMP/Adding-and-Managing-Safes.htm)) 
-5. Activate `MySQL Server` platform at `Administration > Platform Management` ([ref](https://docs.cyberark.com/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PASIMP/Activating-and-Deactivating-Platforms.htm))
-6. Edit `MysQL Server` platform and update driver to `MySQL ODBC 8.0 Unicode Driver` in `ConnectionCommand` under `Target Account Platform > Automatic Password Management > Additional Policy Settings`
+5. Add `Vault Admins` and `CyberArk Vault Admins` with `Safe Management` rights
+6. Activate `MySQL Server` platform at `Administration > Platform Management` ([ref](https://docs.cyberark.com/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PASIMP/Activating-and-Deactivating-Platforms.htm))
+7. Edit `MysQL Server` platform and update driver to `MySQL ODBC 8.0 Unicode Driver` in `ConnectionCommand` under `Target Account Platform > Automatic Password Management > Additional Policy Settings`
 
 ![mysql acc](./images/00-mysql_acc.png)
 
-7. Create an account called `app-cityapp` at `Accounts > Account View`
+8. Create an account called `app-cityapp` at `Accounts > Account View`
 
 Key|Value
 ---|-----
@@ -103,7 +104,7 @@ Initial Password|Cyberark1
 Port|3306
 Database|world
 
-8. Try verify and change the password
+9. Try verify and change the password
 
 ## Setup DAP Master
 
@@ -131,7 +132,7 @@ docker run --name conjur-appliance -d --restart=always --security-opt seccomp:un
 
 2. Copy the cert
 ```bash
-docker cp /root/dap-certificate.tgz conjur-appliance:/tmp/dap-certificate.tgz`
+docker cp /root/dap-certificate.tgz conjur-appliance:/tmp/dap-certificate.tgz
 ```
 
 2.	Let's configure the DAP master instance and import the cert
@@ -146,9 +147,10 @@ evoke ca import --key follower-dap.key.pem follower-dap.cer.pem
 evoke ca import --key master-dap.key.pem --set master-dap.cer.pem
 ```	
 
-3. Clean up the cert file 
+3. Clean up the cert file and exit back to `DAP-MASTER` VM
 ```bash
-rm dap-certicate.tgz *.pem`
+rm dap-certificate.tgz *.pem
+exit
 ```
 
 4. Setup conjur CLI and load initial policy
@@ -156,6 +158,12 @@ rm dap-certicate.tgz *.pem`
 ```bash
 alias conjur='docker run --rm -it --network host -v $HOME:/root -it cyberark/conjur-cli:5'
 conjur init -u https://master-dap.cyberarkdemo.com
+```
+Key|Value
+---|-----
+Trust this certificate|yes
+acccount name|cyberark
+```
 conjur authn login -u admin
 conjur policy load root /root/policy/root.yaml
 ```
@@ -185,7 +193,7 @@ The CGD VM already have synchronizer installed on COMP. We will have to rerun th
 ### Re-install Synchronizer
 
 11. Start` powershell`
-12. Access to the extracted folder from step 3
+12. Access to `Installation` folder under the extracted folder in step 3
 13. Run installation script 
 
 ```powershell
@@ -194,6 +202,7 @@ The CGD VM already have synchronizer installed on COMP. We will have to rerun th
 
 Key|Value
 ---|-----
+target path|C:\Program Files\CyberArk\Synchronizer
 username|admin
 password|Cyberark1
 hostname|master-dap.cyberarkdemo.com:443
@@ -214,20 +223,23 @@ $credentials.GetNetworkCredential().password
 ```
 ![ps](./images/00-sync_cred.png)
 
-14. Login to PVWA as `Mike`
+14. Login to PVWA as `Administrator` using `CyberArk` authenication
 
-15. Change password of `Application-ConjurHost` object with api key value from previous command
-
-16. Update `appliance_url` to point to new dap master `https://master-dap.cyberarkdemo.com`
+15. Search for `application conjur host` account
+16. Change password of `Application-ConjurHost` object with api key value from previous command
+17. Update `appliance_url` to point to new dap master `https://master-dap.cyberarkdemo.com`
 
 ![ps](./images/00-sync_acc.png)
 
-17. Add `LOBUser_appaccts` as safe member of our application safe. This gives synchronizer permission to sync objects from this safe.
+18. Access to `Policies > Access Control (Safe)`
+19. Select `appaccts` safe and click `Memebers`
+
+20 . Add `LOBUser_appaccts` as safe member of our application safe. This gives synchronizer permission to sync objects from this safe.
 ![ps](./images/00-lob-user.png)
 
 18. Click `Service` on taskbar
 
-19. Start `CyberArk Vault-Conjur Synchronizer` service. If the service failed to start, check log at `c:\program files\CyberArk\synchronizer\Logs` to troubleshoot
+19. Start `CyberArk Vault-Conjur Synchronizer` service. If the service failed to start, check log at `c:\program files\CyberArk\Synchronizer\Logs` to troubleshoot
 
 19.	After service start, verify that our objects are synchronized to Conjur Master
 
