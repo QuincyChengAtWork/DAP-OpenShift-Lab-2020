@@ -39,6 +39,26 @@ mysql01|10.0.1.41
 
 We are going to manage & secure a database secret.   Let's onboard the MySQL database credentials to CorePAS.  You can also refer to https://docs.cyberark.com/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PASIMP/MySQLServerPlugin.htm
 
+### Install MySQL server container 
+
+1. Log in to `DAP-Master` VM as admin
+2. Create a MySQL container as our database server
+```bash
+mkdir db && cd db
+wget https://downloads.mysql.com/docs/world.sql.gz
+gunzip world.sql 
+cd ..
+docker rm $(docker ps -a -q)
+docker run --name mysqldb -v /root/db:/docker-entrypoint-initdb.d \
+     -e MYSQL_ROOT_PASSWORD=Cyberark1 \
+     -e MYSQL_DATABASE=world \
+     -e MYSQL_USER=cityapp \
+     -e MYSQL_PASSWORD=Cyberark1 \
+     -p "3306:3306" -d mysql:5.7.29 
+```
+
+:bulb:	 Question: How will you verify it's up & running?
+
 ### Install & Configure MySQL Driver
 1. Log in to `COMP` VM as CYBERARKDEMO\administrator
 2. Browse to https://dev.mysql.com/downloads/file/?id=492345
@@ -53,29 +73,80 @@ We are going to manage & secure a database secret.   Let's onboard the MySQL dat
 
 ### Create MySQL account in PVWA
 1. Log in to `CLIENT` as `CYBERARKDEMO\Mike`
-2. Start `Chrome` and access PVWA by clicking `PAS` on the bookmark bar
+2. Browse to `https://components.cyberarkdemo.com/PasswordVault/v10/`
 3. Select `Active Directory / LDAP` and login as `Mike`
-4. Create a new safe called `appaccts`
-5. Create an account called `app-cityapp`
+4. Create a new safe called `appaccts` at `Policies > Access Control (Safe)` ([ref](https://docs.cyberark.com/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PASIMP/Adding-and-Managing-Safes.htm)) 
+5. Activate `MySQL Server` platform at `Administration > Platform Management` ([ref](https://docs.cyberark.com/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PASIMP/Activating-and-Deactivating-Platforms.htm))
+6. Edit `MysQL Server ![mysql acc](./images/00-mysql_acc.png)
 
-Address: mysql01
-Port: 3306
-Username: cityapp
-Initial Password: Cyberark1
-Database: world
+7. Create an account called `app-cityapp` at `Accounts > Account View`
 
-![mysql acc](./images/00-mysql_acc.png)
+Key|Value
+---|-----
+System Type|Database
+Platform|MySQL
+Safe|appaccts
+Username|cityapp
+Address|mysql01
+Initial Password|Cyberark1
+Port|3306
+Database|world
 
-6. Try verify and change the password
+
+8. Try verify and change the password
 
 
 ## Setup DAP Master
 
+###	Load DAP image
 
-1.	Load conjur image
-2.	Start conjur container
-3.	Configure DAP with signed certificate
+1. Login to `DAP-Master` as `root`
+2. Right-click the desktop and select `Open Terminal`
+3. Load the image to docker
+```
+cd /root
+docker load -i conjur-appliance_11.2.1.tar.gz
+docker tag registry.tld/conjur-appliance:11.2.1 conjur-appliance:11.2.1
+```
 
+### Start DAP Master with signed certificate
 
+1. Spin up the master container
+```
+docker run --name conjur-appliance -d --restart=always --security-opt seccomp:unconfined -p "443:443" -p "636:636" -p "5432:5432" -p "1999:1999" conjur-appliance:11.2.1
+``
+
+2. Copy the cert
+```
+docker cp /root/dap-certificate.tgz conjur-appliance:/tmp/dap-certificate.tgz`
+```
+
+2.	Let's configure the DAP master instance and import the cert
+```
+docker exec -it conjur-appliance bash
+
+evoke configure master --accept-eula -h master-dap.cyberarkdemo.com --master-altnames "master-dap.cyberarkdemo.com" -p Cyberark1 cyberark
+cd /tmp
+tar -zxvf dap-certificate.tgz
+evoke ca import --root /tmp/dc1-ca.cer.pem
+evoke ca import --key follower-dap.key.pem follower-dap.cer.pem
+evoke ca import --key master-dap.key.pem --set master-dap.cer.pem
+```	
+
+3. Clean up the cert file 
+```
+rm dap-certicate.tgz *.pem`
+```
+
+4. Setup conjur CLI and load initial policy
+
+```
+alias conjur='docker run --rm -it --network host -v $HOME:/root -it cyberark/conjur-cli:5'
+conjur init -u https://master-dap.cyberarkdemo.com
+conjur authn login -u admin
+conjur policy load root /root/policy/root.yaml
+```
 
 ## Configure Vault Synchronizer
+
+
