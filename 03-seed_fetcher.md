@@ -1,20 +1,10 @@
 # Lab 3: Follower Deployment with Seed-Fetcher
 
-## Clean-up
-## Load Policy
-Initialize CA
-Enable authenicator
-Create role
-Load variables
-Push images
-Add Master certificate
-Deploy followers
-
-
-We can deployment follower with seed-fetcher which automatically authenticate and retrieve seed on Pod start up. This allow self-healing and auto scaling of follower pods.
+Neext, we will deploy followers with seed-fetcher, which automatically authenticate and retrieve seed on Pod start up. This allow self-healing and auto scaling of follower pods [ref](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/ConjurDeployFollowers.htm).   We will also enable k8s/openshift authenicator to support the following labs.  [ref](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/Kubernetes_deployApplicationCluster.htm)
 
 ## Clean up
-First, let's remove deployment from Lab 2
+First, let's remove deployment from Lab 2.   
+We will be using the terminal on `DAP-MASTER` in lab 2.
 ```
 oc delete deploymentconfig follower
 oc delete svc follower
@@ -22,28 +12,38 @@ oc delete svc follower
 
 ## Load Conjur Policies
 
-1.	Review below conjur policy files and make necessary changes before load it to conjur 
+1.	Review conjur policy files in `/root/policy` and make necessary changes before load it to conjur 
 ```
 conjur policy load root /root/policy/authn-k8s-cluster.yaml
 ```
 
-2.	Initialize internal CA that will be used for K8S Authenticator 
+> :bangbang: If an error `bash: conjur: command not found...`, please execute:
+> `alias conjur='docker run --rm -it --network host -v $HOME:/root -it cyberark/conjur-cli:5'`
+
+
+### CA
+
+1. Initialize internal CA that will be used for K8S Authenticator 
 ```
 docker exec conjur-appliance chpst -u conjur conjur-plugin-service possum rake authn_k8s:ca_init["conjur/authn-k8s/okd"]
 ```
 
-3. Access Conjur UI and verify that conjur/authn-k8s/okd/ca/cert and key have value not blank
+2. Access Conjur UI and verify that `conjur/authn-k8s/okd/ca/cert` and `conjur/authn-k8s/okd/ca/key` have value not blank
 
 ###	Enable K8S Authetnication on Master node
+
 1. Add `CONJUR_AUTHENTICATORS="authn,authn-k8s/okd"` to `/opt/conjur/etc/conjur.conf` in Master container
-2. Restart container to `/opt/conjur/etc/conjur.conf` in Master container 
-3. Restart conjur service to apply this change.
+
 ``` 
 docker exec -it conjur-appliance vi /opt/conjur/etc/conjur.conf
+```
+
+2. Restart conjur service to apply this change.
+``` 
 docker exec conjur-appliance sv restart conjur
 ```
 
-4.	Verify that okd authenticator is now enabled on Master
+3.	Verify that okd authenticator is now enabled on Master
 ```
 curl -k https://master-dap.cyberarkdemo.com/info
 ```
@@ -53,8 +53,8 @@ curl -k https://master-dap.cyberarkdemo.com/info
 1. Review `conjur-authenticator-role.yaml` and `conjur-authenticator-role-binding.yaml` and use oc cli to apply it.
 
 ```
-oc apply -f conjur-authenticator-role.yaml
-oc apply -f conjur-authenticator-role-binding.yaml
+oc apply -f /root/lab3_follower_seedfetcher/conjur-authenticator-role.yaml
+oc apply -f /root/lab3_follower_seedfetcher/conjur-authenticator-role-binding.yaml
 ```
 __**OR**__
 
@@ -62,7 +62,7 @@ Instead of applying rolebinding to individual namespace. We may apply it at clus
 This will allow conjur-cluster service account to check property and push k8s-authn certificate to all projects (i.e. namespace).
 
 ```
-oc apply -f conjur-authenticator-clusterrole-binding.yaml
+oc apply -f /root/lab3_follower_seedfetcher/conjur-authenticator-clusterole-binding.yaml
 ```
 
 2. Configure OpenShift API Detail in Conjur
@@ -111,19 +111,20 @@ docker push docker-registry-default.apps.okd.cyberarkdemo.com/dap/dap-seedfetche
 
 ```
 openssl s_client -showcerts -connect master-dap.cyberarkdemo.com:443 -servername master-dap.cyberarkdemo.com </dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > master-certificate.pem	
-oc create configmap master-certificate --from-file=ssl-certificate=<(cat /root/master-cyberark.pem)
+oc create configmap master-certificate --from-file=ssl-certificate=<(cat master-certificate.pem)
 ```
-This is actually the same certificate that conjur-cli retrieved during cli initialization.
+:bulb:	Do you know it is the same certificate that conjur-cli retrieved during cli initialization.
 
 8.	Review and make necessary changes to follower-dap-seedfetcher.yaml deployment yaml. Then use oc command to apply. 
 ```
 oc apply -f follower-dap-with-seedfetcher.yaml
 ```
 
-9.	Verify the follower Pods started properly. 
-Follower should now be exposed via route `https://follower-dap.apps.okd.cyberarkdemo.com` 
+9. Create route at Services > Follower > Create route
 
-## Extra Tech Challeng
+10.	To verify the follower Pods started properly, it should now be exposed via route `https://follower-dap.apps.okd.cyberarkdemo.com` 
+
+## Extra Tech Challenge
 -	Try scale up follower pods to 2 from the deployment screen and verify the logs from OpenShift & Master container
 -	Try scale up follower pods to 3 from the deployment screen and verify the logs from OpenShift & Master container
 -	Try scale down follower pods back to 2 from the deployment screen and verify the logs from OpenShift & Master container
