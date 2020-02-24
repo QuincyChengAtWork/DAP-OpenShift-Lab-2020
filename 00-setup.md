@@ -42,13 +42,22 @@ We are going to manage & secure a database secret.   Let's onboard the MySQL dat
 ### Install MySQL server container 
 
 1. Log in to `DAP-Master` VM as admin
-2. Create a MySQL container as our database server
+
+2. Enable IP Forwarding and restart services
+```bash
+echo 1 > /proc/sys/net/ipv4/ip_forward
+systemctl restart network
+service docker restart
+docker stop $(docker ps -a -q)
+docker rm $(docker ps -a -q)
+```
+
+3. Create a MySQL container as our database server
 ```bash
 mkdir db && cd db
 wget https://downloads.mysql.com/docs/world.sql.gz
 gunzip world.sql 
 cd ..
-docker rm $(docker ps -a -q)
 docker run --name mysqldb -v /root/db:/docker-entrypoint-initdb.d \
      -e MYSQL_ROOT_PASSWORD=Cyberark1 \
      -e MYSQL_DATABASE=world \
@@ -103,7 +112,7 @@ Database|world
 1. Login to `DAP-Master` as `root`
 2. Right-click the desktop and select `Open Terminal`
 3. Load the image to docker
-```
+```bash
 cd /root
 docker load -i conjur-appliance_11.2.1.tar.gz
 docker tag registry.tld/conjur-appliance:11.2.1 conjur-appliance:11.2.1
@@ -112,12 +121,12 @@ docker tag registry.tld/conjur-appliance:11.2.1 conjur-appliance:11.2.1
 ### Start DAP Master with signed certificate
 
 1. Spin up the master container
-```
+```bash
 docker run --name conjur-appliance -d --restart=always --security-opt seccomp:unconfined -p "443:443" -p "636:636" -p "5432:5432" -p "1999:1999" conjur-appliance:11.2.1
 ``
 
 2. Copy the cert
-```
+```bash
 docker cp /root/dap-certificate.tgz conjur-appliance:/tmp/dap-certificate.tgz`
 ```
 
@@ -134,13 +143,13 @@ evoke ca import --key master-dap.key.pem --set master-dap.cer.pem
 ```	
 
 3. Clean up the cert file 
-```
+```bash
 rm dap-certicate.tgz *.pem`
 ```
 
 4. Setup conjur CLI and load initial policy
 
-```
+```bash
 alias conjur='docker run --rm -it --network host -v $HOME:/root -it cyberark/conjur-cli:5'
 conjur init -u https://master-dap.cyberarkdemo.com
 conjur authn login -u admin
