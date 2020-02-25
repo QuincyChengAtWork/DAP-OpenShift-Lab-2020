@@ -25,12 +25,13 @@ oc project cityapp
 
 7.	Review and make necessary changes Secretless configuration file `secretless.yaml` and load it as a new configmap
 ```
-cd \root\lab5_secretless
+cd /root/lab5_secretless
 oc create configmap cityapp-secretless-config --from-file=secretless.yaml
 ```
+:bulb: Make sure you have updated it!
 
-8.	Review cityapp-secretless.yaml deployment file and modify it with proper value for your environment. 
-    Apply the file to deploy cityapp with secretless-broker.
+8.	Review `cityapp-secretless.yaml` deployment file and modify it with proper value for your environment. 
+    Apply the file to deploy `cityapp` with secretless-broker.
 ```
 oc apply -f cityapp-secretless.yaml
 ```
