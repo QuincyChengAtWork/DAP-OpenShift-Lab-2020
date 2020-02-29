@@ -1,0 +1,54 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cityapp-hardcode
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cityapp-hardcode
+  labels:
+    app: cityapp-hardcode
+spec:
+  ports:
+  - port: 3000
+    name: http
+  selector:
+    app: cityapp-hardcode
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: cityapp-hardcode
+  name: cityapp-hardcode
+spec:
+  replicas: 1
+  selector:
+    app: cityapp-hardcode
+  template:
+    metadata:
+      labels:
+        app: cityapp-hardcode
+    spec:
+      serviceAccountName: cityapp-hardcode
+      containers:
+      - image: docker-registry.default.svc:5000/cityapp/cityapp:latest
+        imagePullPolicy: Always
+        name: cityapp
+        env:
+          - name: DBAddress
+            value: "mysql01.cyberarkdemo.com"
+          - name: DBName
+            value: "world"
+          - name: DBPort
+            value: "3306"
+          - name: DBUsername
+            value: "cityapp"
+          - name: DBPassword
+            value: "KWufYc5d"
+        ports:
+        - containerPort: 3000
+          name: http
