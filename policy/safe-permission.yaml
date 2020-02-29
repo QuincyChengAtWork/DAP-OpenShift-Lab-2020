@@ -1,0 +1,6 @@
+#Grant application access to credentials synchronized form CyberArk Vault
+- !grant
+  role: !group vault/appaccts/appaccts/delegation/consumers
+  members:
+  - !layer /openshift-apps/cityapp
+
