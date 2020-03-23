@@ -124,8 +124,9 @@ oc apply -f follower-dap-with-seedfetcher.yaml
 
 10.	To verify the follower Pods started properly, it should now be exposed via route `https://follower-dap.apps.okd.cyberarkdemo.com` 
 
-## Extra Tech Challenge
+## Extra Tech Challenges
 -	Try scale up follower pods to 2 from the deployment screen and verify the logs from OpenShift & Master container
 -	Try scale up follower pods to 3 from the deployment screen and verify the logs from OpenShift & Master container
 -	Try scale down follower pods back to 2 from the deployment screen and verify the logs from OpenShift & Master container
+- Can you open the seed tar file and see if the FQDN is there?
 
