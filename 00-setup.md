@@ -236,7 +236,7 @@ $credentials.GetNetworkCredential().password
 19. Select `appaccts` safe and click `Memebers`
 
 20 . Add `LOBUser_appaccts` as safe member of our application safe. This gives synchronizer permission to sync objects from this safe.
-![ps](./images/00-lob-user.png)
+![ps](./images/00-safe-owner.PNG)
 
 18. Click `Service` on taskbar
 
