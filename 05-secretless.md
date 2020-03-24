@@ -40,4 +40,4 @@ oc apply -f cityapp-secretless.yaml
 
 ## Extra Tech Challengs
 - You can perform additional test by rotating mysql password using CPM and observe how each application deployment react. 
-- Another good exercise is to create dual account for cityapp. (Note that cityappA and cityappB accounts are already provisioned on MySQL)
+- You can also create dual account for cityapp.  (https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/CP%20and%20ASCP/cv_Managing-Dual-Accounts.htm)
