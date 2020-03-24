@@ -73,7 +73,5 @@ The application will connect to a MySQL database to retreive data, and during au
 2. Prepare and apply config
 3. Re-deploy app
 
-### [Extra Challenges](06-extra_challenges.md)
-
 ### Reference
  - [CyberArk documentation](https://docs.cyberark.com/)
